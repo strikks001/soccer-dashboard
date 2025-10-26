@@ -91,12 +91,27 @@ df_plot["WinnerType"] = np.select(
     default="Draw"
 )
 
+# --- Toggle: gelijkspelen meenemen of niet ---
+show_draws = st.checkbox("Gelijkspelen meenemen", value=True)
+
+df_view = df_plot.copy()
+if not show_draws:
+    df_view = df_view[df_view["WinnerType"] != "Draw"]
+
+# dynamische volgorde voor assen/legendes
+order = [x for x in ["Home", "Away", "Draw"] if x in df_view["WinnerType"].unique()]
+
+# Als er niets overblijft, netjes stoppen
+if df_view.empty:
+    st.info("Geen wedstrijden over met de huidige filter (Draw uitgeschakeld).")
+    st.stop()
+
 order = ["Home", "Away", "Draw"]
 
 # check for correlation
 st.subheader("4.1 Correlatie matrix")
 corr_cols = ["Home Team Goals", "Away Team Goals", "Total Goals", "GoalDiff", "temp_mean_c", "rain_total_mm", "wind_mean_ms"]
-corr = df_plot[corr_cols].corr()
+corr = df_view[corr_cols].corr()
 fig_corr = px.imshow(
     corr,
     text_auto=True,
@@ -110,7 +125,7 @@ fig_corr = px.imshow(
 )
 st.plotly_chart(fig_corr)
 
-corr = df_plot.corr(numeric_only=True)
+corr = df_view.corr(numeric_only=True)
 r_temp_goals = corr.loc["temp_mean_c", "Total Goals"].round(2)
 r_rain_goals = corr.loc["rain_total_mm", "Total Goals"].round(2)
 r_wind_goals = corr.loc["wind_mean_ms", "Total Goals"].round(2)
@@ -125,7 +140,7 @@ st.markdown(f"""
 # Kleine samenvatting per uitslag
 st.subheader("4.2 Samenvatting per uitslag (gemiddelde)")
 st.dataframe(
-    df_plot.groupby("WinnerType", as_index=False)[["temp_mean_c","rain_total_mm","wind_mean_ms"]].mean().round(2)
+    df_view.groupby("WinnerType", as_index=False)[["temp_mean_c","rain_total_mm","wind_mean_ms"]].mean().round(2)
 )
 
 fig = make_subplots(
@@ -137,8 +152,8 @@ fig = make_subplots(
 # Temperatuur-boxplot
 fig.add_trace(
     go.Box(
-        y=df_plot["temp_mean_c"],
-        x=df_plot["WinnerType"],
+        y=df_view["temp_mean_c"],
+        x=df_view["WinnerType"],
         name="Temperatuur",
         boxpoints="outliers"
     ),
@@ -148,8 +163,8 @@ fig.add_trace(
 # Regen-boxplot
 fig.add_trace(
     go.Box(
-        y=df_plot["rain_total_mm"],
-        x=df_plot["WinnerType"],
+        y=df_view["rain_total_mm"],
+        x=df_view["WinnerType"],
         name="Regen",
         boxpoints="outliers"
     ),
@@ -159,8 +174,8 @@ fig.add_trace(
 # Wind-boxplot
 fig.add_trace(
     go.Box(
-        y=df_plot["wind_mean_ms"],
-        x=df_plot["WinnerType"],
+        y=df_view["wind_mean_ms"],
+        x=df_view["WinnerType"],
         name="Wind",
         boxpoints="outliers"
     ),
@@ -192,7 +207,7 @@ factor = st.selectbox(
 )
 
 fig_bubble = px.scatter(
-    df_plot,
+    df_view,
     x="temp_mean_c",
     y="Total Goals",
     size="rain_total_mm",
