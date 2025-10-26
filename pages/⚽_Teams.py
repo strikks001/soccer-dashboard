@@ -6,7 +6,10 @@ from load_matches_data import load_matches_data
 
 st.title("⚽ 1. Teams")
 
-df_matches = load_matches_data()
+if "matches_df" in st.session_state:
+    df_matches = st.session_state["matches_df"]
+else:
+    df_matches = load_matches_data()
 
 st.subheader("1.1 Aantal teams per jaar")
 

@@ -10,7 +10,10 @@ from load_matches_data import load_matches_data
 from load_meteo_data import load_meteo_data
 
 # Filter on the 2014 World Cup
-df_all = load_matches_data()
+if "matches_df" in st.session_state:
+    df_all = st.session_state["matches_df"]
+else:
+    df_all = load_matches_data()
 
 # Add interactive selectbox of years
 years = sorted(df_all["Year"].unique().tolist())

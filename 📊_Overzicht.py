@@ -5,7 +5,10 @@ import pandas as pd
 from load_meteo_data import load_meteo_data
 from load_matches_data import load_matches_data, load_winner_data
 
-df_matches = load_matches_data()
+if "matches_df" not in st.session_state:
+    st.session_state["matches_df"] = load_matches_data()
+
+df_matches = st.session_state["matches_df"]
 
 st.title("📊 Overzicht")
 st.write("Dit dashboard biedt een overzicht van de historische data van het WK voetbal, inclusief wedstrijden, teams en locaties. In de vergelijkingssectie kunt u dieper ingaan op specifieke analyses en vergelijkingen. Het onderzoek kijkt naar de weerdata in relatie tot de wedstrijden van het WK.")
